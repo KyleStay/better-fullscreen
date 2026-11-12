@@ -1,0 +1,17 @@
+:root{color-scheme:light dark;font:14px/1.5 system-ui,-apple-system,sans-serif;color:light-dark(#20202b,#efeff5);background:light-dark(#f8f8fc,#202027)}
+*{box-sizing:border-box}
+body{margin:0}
+h1{font-size:19px;line-height:1.3;margin:0 0 22px;font-weight:650}
+.popup{width:320px;padding:22px}
+.toggle{display:flex;align-items:center;gap:11px;cursor:pointer;overflow-wrap:anywhere}
+input[type=checkbox]{width:18px;height:18px;accent-color:#6561cf;flex-shrink:0}
+button{font:600 14px system-ui;color:white;background:#5955ba;border:0;border-radius:8px;padding:11px 16px;cursor:pointer}
+button:hover{background:#49459f}
+button:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid #7b9ee5;outline-offset:3px}
+.popup>button{margin-top:18px;width:100%}
+[hidden]{display:none!important}
+p:empty{display:none}
+#status{font-size:13px;color:light-dark(#783a29,#ffc0a8);overflow-wrap:anywhere}
+details{margin-top:22px;border-top:1px solid light-dark(#dedee8,#42424f);padding-top:14px;font-size:13px}
+summary{cursor:pointer}
+kbd{font:inherit;background:light-dark(#e4e4ee,#40404c);padding:1px 5px;border-radius:3px}

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Better Fullscreen test player</title>
+<style>
+body{font:16px system-ui;background:#ececf4;color:#242435;margin:32px}
+#clipped{transform:translateZ(0);overflow:hidden;contain:paint;width:640px;border-radius:16px}
+#player{position:relative;width:640px;height:420px;background:#17172b;color:white}
+video{width:640px;height:360px;object-fit:contain}
+#controls{position:absolute;bottom:0;left:0;right:0;display:flex;gap:12px;padding:12px;align-items:center;background:#17172be8}
+button{font:14px system-ui;padding:7px 12px}
+#player:fullscreen #caption{color:rgb(120,230,255)}
+#player:fullscreen{border:20px solid red}
+#slides{padding:20px;background:#99aadd;margin-top:24px}
+iframe{width:680px;height:520px;border:3px solid #62628a}
+</style>
+<h1>Video player</h1>
+<div id="clipped"><div id="player">
+<video id="video" muted autoplay playsinline controls></video>
+<div id="controls"><span id="caption">Test captions</span><button id="enter">Fullscreen</button><button id="exit">Exit fullscreen</button></div>
+</div></div>
+<div id="slides"><button id="slides-enter">Fullscreen slides</button></div>
+<script>
+const video=document.querySelector('video');
+const canvas=document.createElement('canvas');canvas.width=960;canvas.height=540;
+const ctx=canvas.getContext('2d');let tick=0;
+setInterval(()=>{tick++;ctx.fillStyle='#262441';ctx.fillRect(0,0,960,540);ctx.fillStyle='#8ee0ef';ctx.fillRect(80+(tick%80)*5,150,200,160);ctx.fillStyle='white';ctx.font='38px system-ui';ctx.fillText('Better Fullscreen',80,100);ctx.font='24px system-ui';ctx.fillText('Live player · '+tick,80,450)},100);
+video.srcObject=canvas.captureStream(10);video.play().catch(()=>{});
+window.changes=0;document.addEventListener('fullscreenchange',()=>window.changes++);
+document.querySelector('#enter').onclick=()=>{window.entry='opening';document.querySelector('#player').requestFullscreen().then(()=>window.entry='opened',e=>window.entry=e.name)};
+document.querySelector('#exit').onclick=()=>document.exitFullscreen().catch(()=>{});
+document.querySelector('#slides-enter').onclick=()=>document.querySelector('#slides').requestFullscreen().catch(()=>{});
+window.addEventListener('keydown',e=>{if(e.key==='Escape')e.stopImmediatePropagation()},true);
+</script>
+</html>

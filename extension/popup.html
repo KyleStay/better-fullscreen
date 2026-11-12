@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Better Fullscreen</title>
+  <link rel="stylesheet" href="ui.css">
+</head>
+<body class="popup">
+  <h1>Better Fullscreen</h1>
+  <label class="toggle"><input id="enabled" type="checkbox" disabled><span>Enable on <strong id="site">this site</strong></span></label>
+  <button id="return" hidden>Return to page</button>
+  <p id="status" role="status"></p>
+  <details>
+    <summary>Help</summary>
+    <p>Use a website video's fullscreen button to fill the current tab. Press <kbd>Esc</kbd> or choose <b>Return to page</b> to go back.</p>
+    <p>Choose <b>Native fullscreen</b> in the media view to use the whole display. Unsupported players use normal fullscreen.</p>
+    <p>Built-in Chrome video controls and some embedded players may still use native fullscreen. Turn this off for any site that does not work well. Reload open pages after installing or updating the extension.</p>
+  </details>
+  <script src="popup.js" type="module"></script>
+</body>
+</html>
