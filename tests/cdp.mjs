@@ -47,7 +47,7 @@ class Target {
     return response.result.value;
   }
   async click(selector) {
-    const box = await this.eval(`(()=>{const r=document.querySelector(${JSON.stringify(selector)}).getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()`);
+    const box = await this.eval(`(()=>{const element=document.querySelector(${JSON.stringify(selector)});if(!element)throw new Error('Click target not found');element.scrollIntoView({block:'center',inline:'center'});const r=element.getBoundingClientRect();if(r.width<=0||r.height<=0)throw new Error('Click target is hidden');return {x:r.x+r.width/2,y:r.y+r.height/2}})()`);
     await this.send("Page.bringToFront");
     await this.send("Input.dispatchMouseEvent", {type:"mousePressed", ...box, button:"left", clickCount:1});
     await this.send("Input.dispatchMouseEvent", {type:"mouseReleased", ...box, button:"left", clickCount:1});

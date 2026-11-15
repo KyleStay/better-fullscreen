@@ -9,12 +9,21 @@ const settle = () => new Promise(resolve=>setImmediate(resolve));
 function setup({enabled=true,media=true,autoReply=true}={}) {
   let native = null, calls = 0;
   const messages = [], listeners = [], changes = [];
+  const shorthands={
+    inset:["top","right","bottom","left"],
+    margin:["margin-top","margin-right","margin-bottom","margin-left"],
+    padding:["padding-top","padding-right","padding-bottom","padding-left"],
+    overflow:["overflow-x","overflow-y"],
+    border:["top","right","bottom","left"].flatMap(side=>["width","style","color"].map(part=>`border-${side}-${part}`)),
+    background:["background-image","background-color"]
+  };
   class Style {
     constructor(){this.values=new Map();}
-    setProperty(k,v,p=""){this.values.set(k,[v,p]);}
-    getPropertyValue(k){return this.values.get(k)?.[0]||"";}
-    getPropertyPriority(k){return this.values.get(k)?.[1]||"";}
-    removeProperty(k){this.values.delete(k);}
+    [Symbol.iterator](){return this.values.keys();}
+    setProperty(k,v,p=""){for(const name of shorthands[k]||[k])this.values.set(name,[v,p]);}
+    getPropertyValue(k){const names=shorthands[k]||[k];const values=names.map(name=>this.values.get(name)?.[0]||"");return values.every(value=>value===values[0])?values[0]:"";}
+    getPropertyPriority(k){const names=shorthands[k]||[k];const priorities=names.map(name=>this.values.get(name)?.[1]||"");return priorities.every(value=>value===priorities[0])?priorities[0]:"";}
+    removeProperty(k){for(const name of shorthands[k]||[k])this.values.delete(name);}
   }
   class Element {
     constructor(tag="div"){this.tag=tag;this.style=new Style();this.attributes=new Map();this.children=[];this.isConnected=true;}
@@ -86,6 +95,21 @@ test("disabled sites and non-media targets call native fullscreen directly",asyn
     assert.equal(app.nativeCalls(),1);assert.equal(app.messages.filter(m=>m.action==="enter").length,0);
     assert.equal(app.target.style.getPropertyValue("position"),"relative");
   }
+});
+
+test("return preserves partial inline longhands and priorities without reverting unrelated style updates",async()=>{
+  const app=setup();await settle();
+  const original={top:["40px","important"],"margin-left":["12px",""],"padding-bottom":["6px","important"],"border-bottom-color":["red",""],"background-image":["linear-gradient(red,blue)",""],"overflow-x":["clip","important"]};
+  for(const [name,[value,priority]] of Object.entries(original))app.target.style.setProperty(name,value,priority);
+  await app.target.requestFullscreen();
+  app.target.style.setProperty("color","rebeccapurple");
+  await app.document.exitFullscreen();await settle();
+  for(const [name,[value,priority]] of Object.entries(original)){
+    assert.equal(app.target.style.getPropertyValue(name),value,name);
+    assert.equal(app.target.style.getPropertyPriority(name),priority,name);
+  }
+  assert.equal(app.target.style.getPropertyValue("color"),"rebeccapurple");
+  assert.equal(app.target.style.getPropertyValue("right"),"");
 });
 
 test("requests without a gesture and disallowed fullscreen pass through to native policy",async()=>{

@@ -66,12 +66,23 @@
     if (active) collapse();
     const undo = [];
     function style(element, values) {
+      const previous = new Map(Array.from(element.style, property => [property, {
+        value: element.style.getPropertyValue(property), priority: element.style.getPropertyPriority(property)
+      }]));
       for (const [property, value] of Object.entries(values)) {
-        const previous = element.style.getPropertyValue(property);
-        const priority = element.style.getPropertyPriority(property);
-        undo.push(() => previous ? element.style.setProperty(property, previous, priority) : element.style.removeProperty(property));
         element.style.setProperty(property, value, "important");
       }
+      // Shorthands can replace longhands that were never explicitly assigned here.
+      const changed = [...new Set([...previous.keys(), ...Array.from(element.style)])].filter(property =>
+        element.style.getPropertyValue(property) !== (previous.get(property)?.value || "") ||
+        element.style.getPropertyPriority(property) !== (previous.get(property)?.priority || ""));
+      undo.push(() => {
+        for (const property of changed) element.style.removeProperty(property);
+        for (const property of changed) {
+          const original = previous.get(property);
+          if (original) element.style.setProperty(property, original.value, original.priority);
+        }
+      });
     }
     const previousMarker = target.getAttribute("data-better-fullscreen-target");
     target.setAttribute("data-better-fullscreen-target", "");

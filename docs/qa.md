@@ -4,6 +4,8 @@
 
 Local tests cover unchanged window/tab identity, viewport sessions, concurrent requests, navigation, service worker restart, site overrides, reversible player layout, Escape capture, native fullscreen activation/toggling, icon state and accessible labels, return from native mode, failure recovery, messaging boundaries and rejection of missing/stale store screenshots. Browser APIs and DOM objects are simulated.
 
+The landing review added regression coverage for partial inline longhands and priorities being overwritten by fullscreen shorthands, and for hidden/offscreen CDP click targets. The style regression failed before the repair and now passes. The capture harness reveals its non-media control only after screenshots and includes a real-CSSOM restoration assertion; these browser checks still need a permitted Chrome run.
+
 The real-browser fixture harness now asserts that viewport and browser-window dimensions stay unchanged, no tabs are created, playback continues, native fullscreen toggles correctly, and Escape restores the page. It also covers player exit, Return to page from native fullscreen, navigation, native pass-through and cross-origin embeds. **This updated browser harness has not run in Chrome here.**
 
 ## Environment blocker
