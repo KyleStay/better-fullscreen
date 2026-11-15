@@ -1,14 +1,16 @@
 # Verification
 
-## Current candidate: 0.2.0
+## Current candidate: 0.3.0
 
-All 21 local tests pass. They cover unchanged window/tab identity, viewport sessions, concurrent requests, navigation, service worker restart, site overrides, reversible player layout, Escape capture, native fullscreen activation/toggling, return from native mode, failure recovery and messaging boundaries. Browser APIs and DOM objects are simulated.
+Local tests cover unchanged window/tab identity, viewport sessions, concurrent requests, navigation, service worker restart, site overrides, reversible player layout, Escape capture, native fullscreen activation/toggling, icon state and accessible labels, return from native mode, failure recovery, messaging boundaries and rejection of missing/stale store screenshots. Browser APIs and DOM objects are simulated.
 
 The real-browser fixture harness now asserts that viewport and browser-window dimensions stay unchanged, no tabs are created, playback continues, native fullscreen toggles correctly, and Escape restores the page. It also covers player exit, Return to page from native fullscreen, navigation, native pass-through and cross-origin embeds. **This updated browser harness has not run in Chrome here.**
 
 ## Environment blocker
 
-The earlier 0.1.0 browser attempt on November 12, 2026 stopped before launching Chrome: the sandbox rejected listening on `127.0.0.1` with `EPERM`. The original receipt is `artifacts/qa/browser-results.json`. It is historical environment evidence, not a 0.2.0 runtime test. No repeated browser attempt or alternate route was used for this change. No test browser or disposable profile was created.
+The 0.3.0 preparation reran the browser harness under the current environment. It stopped before launching Chrome: the sandbox rejected listening on `127.0.0.1` with `EPERM`. The current receipt is `artifacts/qa/browser-results.json`; it identifies the attempted run and failure. No alternate browser route was used, and no test browser or disposable profile was created.
+
+The store capture mode serves `store/demo/index.html`, an original animated scene, and exercises the same actual extension. Screenshots are copied to `store/screenshots/` and receive a success receipt only after the browser checks and cleanup pass. `store:prepare` rejects missing screenshots, changed source, changed image bytes and incorrect dimensions. Promotional artwork is explicitly separate from screenshots.
 
 ## Runtime checks still required
 

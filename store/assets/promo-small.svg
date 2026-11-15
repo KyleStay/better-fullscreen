@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="280" viewBox="0 0 440 280">
+  <defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#242039"/><stop offset="1" stop-color="#4d458e"/></linearGradient><linearGradient id="scene" y2="1" x2="0"><stop stop-color="#8497b3"/><stop offset="1" stop-color="#ded2b2"/></linearGradient></defs>
+  <path fill="url(#bg)" d="M0 0h440v280H0z"/>
+  <text x="28" y="48" font-family="Inter,Arial,sans-serif" font-size="26" font-weight="700" letter-spacing="-.5" fill="#fff">Better Fullscreen</text>
+  <rect x="28" y="72" width="384" height="180" rx="12" fill="#171521" stroke="#a197db" stroke-width="2"/>
+  <path d="M40 84h360v156H40z" fill="url(#scene)"/>
+  <circle cx="322" cy="120" r="17" fill="#f7e4b7"/>
+  <path d="m40 210 90-88 90 85 72-50 108 62v21H40z" fill="#5a6576"/>
+  <path d="m40 227 112-54 100 53 84-28 64 25v17H40z" fill="#344c52"/>
+  <path d="M46 90h14m-14 0v14m340-14h-14m14 0v14M46 234h14m-14 0v-14m340 14h-14m14 0v-14" stroke="#fff" stroke-width="3" fill="none"/>
+</svg>

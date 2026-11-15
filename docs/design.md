@@ -12,6 +12,8 @@ Escape ends viewport mode and restores the original page layout, including when 
 
 Provide **Native fullscreen** beside the return control. Invoke the genuine browser API directly from the click, bypassing the website hook. It fullscreens the root document so the media view, embedded players, and return controls remain visible. While native fullscreen is active, relabel the button **Exit native fullscreen** and allow Chrome to handle Escape. The return control leaves both modes. A failed native request keeps the viewport view and displays an error.
 
+Show these as compact icon buttons: four outward corners for Native fullscreen, inward corners for Exit native fullscreen, and an × for Return to page. Keep action names as tooltips and accessible labels, with a visible keyboard-focus indicator and 44-pixel click targets.
+
 Keep the original live document rather than duplicating media. There are no popup windows or placeholder tabs. Navigation or closing the tab clears its session. Site overrides and unsupported requests retain native behavior.
 
 If viewport setup fails, restore the original layout and attempt native fullscreen when activation permits it; otherwise offer **Use browser fullscreen** for a fresh click. Do not report success when neither view opened.

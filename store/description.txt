@@ -1,0 +1,18 @@
+Watch video across your current Chrome tab without moving or resizing the browser window.
+
+Better Fullscreen replaces compatible website video fullscreen requests with a player view that fills the browser viewport. It is designed for Chrome on macOS, where you may prefer to keep video in the current window rather than enter a separate fullscreen Space.
+
+CONTROLS
+• Use the website player's fullscreen button to fill the current tab.
+• Press Escape or click × to return to the page.
+• Click the outward-corners icon when you want native fullscreen.
+• Click the inward-corners icon to leave native fullscreen.
+• Use the extension's toolbar menu to turn replacement off for a particular site.
+
+LOCAL PROCESSING
+Player layout and the current site's address are processed in your browser. Site overrides are saved on your device. The extension does not transmit this information to a server and has no analytics, ads or tracking.
+
+COMPATIBILITY
+For Chrome on macOS. The extension works with compatible JavaScript Fullscreen API players and permitted embedded frames. Some browser-provided video controls, protected pages and custom players may still use native fullscreen. If a site does not work well, turn replacement off for that site. The extension does not download videos or bypass site access restrictions.
+
+After installing, reload already-open video pages before trying their fullscreen button.

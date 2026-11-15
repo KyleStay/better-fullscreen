@@ -1,0 +1,13 @@
+Environment: Chrome 119 or newer on macOS. The replacement feature intentionally does not enable on Windows, Linux or ChromeOS.
+
+No extension account, subscription or developer credentials are required. The extension does not bypass third-party login, DRM or paywalls.
+
+1. Install the package and reload a compatible video page. A reproducible, self-contained demo is included in the public repository at store/demo/index.html; the repository's npm run store:capture command serves that original-content demo locally, loads the exact unpacked extension in isolated Chrome for Testing, exercises the controls and captures real screenshots.
+2. Click the player's fullscreen button. The player should fill the current viewport while tab and window placement remain unchanged. The corners icon and × appear at the top right.
+3. Press Escape or click ×. The page layout should return.
+4. Enter the media view again. Click the corners icon to use real native fullscreen. It changes to inward-facing corners. Toggle it to return to viewport mode, or use × to return to the page.
+5. Open Better Fullscreen from the extension toolbar. Disable it for this site. The next fullscreen request should follow the site's native behavior. Re-enable it to restore replacement.
+
+Expected access: storage plus permitted HTTP/HTTPS page access. All executable code is packaged. There is no remote code, analytics, network upload or background data service.
+
+Compatibility limits are documented in the listing. Runtime evidence and the exact tested source hash are recorded separately in the capture report; do not treat a prepared package as proof that unrecorded third-party sites passed.

@@ -1,9 +1,10 @@
 {
   "manifest_version": 3,
   "name": "Better Fullscreen",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Fill your current tab with video, with a button for native fullscreen. Press Escape to return to the page.",
   "minimum_chrome_version": "119",
+  "homepage_url": "https://github.com/KyleStay/better-fullscreen#readme",
   "permissions": ["storage"],
   "host_permissions": ["http://*/*", "https://*/*"],
   "background": {"service_worker": "background.js", "type": "module"},

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import http from "node:http";
-import {readFile, writeFile, mkdir, access} from "node:fs/promises";
+import {readFile, writeFile, mkdir} from "node:fs/promises";
+import {createHash} from "node:crypto";
 import {fileURLToPath} from "node:url";
 import path from "node:path";
 import {execFile} from "node:child_process";
@@ -11,6 +12,8 @@ const exec = promisify(execFile);
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const runnerDir = process.env.CHROME_TEST_RUNNER_DIR || "/Users/kyle/.codex/skills/chrome-extension-test-runner/scripts";
 const evidenceDir = path.join(root, "artifacts", "qa");
+const storeCapture = process.env.STORE_CAPTURE === "1";
+const captured = [];
 await mkdir(evidenceDir, {recursive:true});
 const results = {started: new Date().toISOString(), checks: [], errors: [], cleanup: null};
 let server, browser, launch, worker, workerInfo;
@@ -55,8 +58,20 @@ async function open(page, id) {
 }
 async function returned(id) { await until(async()=> !(await session(id)), "tab restored"); }
 
+async function screenshot(page, name, label) {
+  if (!storeCapture) return;
+  const size = await page.eval("({width:innerWidth,height:innerHeight})");
+  assert.deepEqual(size, {width:1280,height:800});
+  const {data} = await page.send("Page.captureScreenshot", {format:"png", captureBeyondViewport:false});
+  const bytes = Buffer.from(data,"base64");
+  assert.equal(bytes.readUInt32BE(16),1280);assert.equal(bytes.readUInt32BE(20),800);
+  const file = path.join(evidenceDir, name);
+  await writeFile(file,bytes);
+  captured.push({file,name,label,sha256:createHash("sha256").update(bytes).digest("hex")});
+}
+
 try {
-  const fixture = await readFile(path.join(root,"tests/fixtures/player.html"));
+  const fixture = await readFile(path.join(root,storeCapture ? "store/demo/index.html" : "tests/fixtures/player.html"));
   server = http.createServer((req,res)=>{
     res.setHeader("Content-Type","text/html; charset=utf-8");
     if (req.url.startsWith("/embed")) res.end(`<!doctype html><title>Embedded video fixture</title><style>body{margin:24px;font:16px system-ui}iframe{width:720px;height:600px}</style><h1>Embedded video</h1><iframe src="http://localhost:${server.address().port}/player" allow="fullscreen; autoplay" allowfullscreen></iframe>`);
@@ -78,6 +93,7 @@ try {
   worker = await browser.attach(workerInfo.targetId);
   await worker.send("Runtime.enable");
   let page = await attachPage(url);
+  if (storeCapture) await page.send("Emulation.setDeviceMetricsOverride",{width:1280,height:800,deviceScaleFactor:1,mobile:false});
   await configReady(page);
   const tab = await worker.eval(`chrome.tabs.query({url:${JSON.stringify(url)}}).then(t=>t[0])`);
   let id = tab.id;
@@ -97,15 +113,17 @@ try {
   await until(()=>page.eval(`document.querySelector('video').currentTime>${before.time+0.2}`),"playback continues");
   const {data} = await page.send("Page.captureScreenshot",{format:"png"});
   await writeFile(path.join(evidenceDir,"media-viewport.png"),Buffer.from(data,"base64"));
+  await screenshot(page,"01-viewport.png","Actual media view in the current tab");
   record("live player fills current viewport without moving/resizing the window or creating tabs");
 
   async function toolbar(native) {
     const rect=await page.eval("document.querySelector('[data-better-fullscreen-control]').getBoundingClientRect().toJSON()");
     await page.send("Page.bringToFront");
-    for(const type of ["mousePressed","mouseReleased"])await page.send("Input.dispatchMouseEvent",{type,x:native?rect.x+65:rect.right-65,y:rect.y+18,button:"left",clickCount:1});
+    for(const type of ["mousePressed","mouseReleased"])await page.send("Input.dispatchMouseEvent",{type,x:native?rect.x+22:rect.right-22,y:rect.y+22,button:"left",clickCount:1});
   }
   await toolbar(true);
   await until(()=>page.eval("document.documentElement.matches(':fullscreen')"),"native button enters real fullscreen");
+  await screenshot(page,"02-native-fullscreen.png","Actual native fullscreen with inward-corners control");
   await toolbar(true);
   await until(()=>page.eval("!document.documentElement.matches(':fullscreen')"),"native toggle leaves real fullscreen");
   assert.ok(await session(id));
@@ -114,6 +132,7 @@ try {
   await page.click("#video");await page.escape();await returned(id);
   assert.equal(await page.eval("document.fullscreenElement"),null);
   assert.equal(await page.eval("document.querySelector('#player').style.cssText"),initialStyle);
+  await screenshot(page,"03-return-to-page.png","Actual page after Escape restores the layout");
   record("Escape wins over player key handlers and restores page layout");
   await open(page,id);await page.click("#exit");await returned(id);
   record("player exit-fullscreen control restores page");
@@ -154,10 +173,22 @@ try {
   record("cross-origin embedded player fills viewport and focused-child Escape restores page");
 
   assert.equal(results.errors.length,0,`Page exceptions: ${results.errors}`);
+  if (storeCapture) {
+    const output=path.join(root,"store/screenshots");await mkdir(output,{recursive:true});
+    for(const capture of captured)await writeFile(path.join(output,capture.name),await readFile(capture.file));
+    const manifest=JSON.parse(await readFile(path.join(root,"extension/manifest.json"),"utf8"));
+    const sourceFiles=["manifest.json","background.js","policy.js","bridge.js","page.js","popup.html","popup.js","ui.css","privacy.html","icons/16.png","icons/32.png","icons/48.png","icons/128.png"];
+    const hashes={};for(const file of sourceFiles)hashes[file]=createHash("sha256").update(await readFile(path.join(root,"extension",file))).digest("hex");
+    results.storeCapture={version:manifest.version,sourceFiles:hashes,screenshots:captured.map(({file,...capture})=>capture),originalContent:true,source:"Actual extension in isolated Chrome for Testing on the original project demo",verified:true};
+  }
 } catch(error) {
   results.failure=error.stack;
   console.error(error.stack);
   process.exitCode=1;
 } finally {
   await cleanup().catch(error=>{console.error("Cleanup failed",error);process.exitCode=1});
+  if(storeCapture && !results.failure && results.cleanup?.processes===0 && results.cleanup?.profiles===0) {
+    const receipt={started:results.started,finished:results.finished,browser:results.browser,checks:results.checks,cleanup:results.cleanup,storeCapture:results.storeCapture};
+    await writeFile(path.join(root,"store/screenshots/capture.json"),JSON.stringify(receipt,null,2)+"\n");
+  }
 }

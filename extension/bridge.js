@@ -11,6 +11,24 @@
   const send = message => chrome.runtime.sendMessage(message);
   const emit = data => window.postMessage({channel: EXTENSION, ...data}, "*");
 
+  function setIcon(button, icon, label) {
+    const paths = {
+      expand: "M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5",
+      shrink: "M3 8h5V3m8 0v5h5M3 16h5v5m8 0v-5h5",
+      close: "M6 6l12 12M18 6 6 18"
+    };
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    for (const [name, value] of Object.entries({viewBox: "0 0 24 24", width: "20", height: "20", fill: "none", stroke: "currentColor", "stroke-width": "2", "stroke-linecap": "round", "stroke-linejoin": "round", "aria-hidden": "true", focusable: "false"})) {
+      svg.setAttribute(name, value);
+    }
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", paths[icon]);
+    svg.append(path);
+    button.replaceChildren(svg);
+    button.setAttribute("aria-label", label);
+    button.title = label;
+  }
+
   function showSession(next) {
     if (!next && session) {
       if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
@@ -37,9 +55,10 @@
     overlay.style.cssText = "all:initial!important;position:fixed!important;top:12px!important;right:12px!important;z-index:2147483647!important;visibility:visible!important;display:block!important";
     const root = overlay.attachShadow({mode: "closed"});
     const style = document.createElement("style");
-    style.textContent = "button{font:500 13px system-ui;cursor:pointer;border:1px solid #ffffff60;border-radius:8px;background:#17171ee8;color:white;padding:9px 13px;box-shadow:0 2px 10px #0004}button+button{margin-left:8px}button:focus-visible{outline:3px solid #84c9ff;outline-offset:2px}button:hover{background:#34343f}p{font:13px system-ui;max-width:320px;background:#17171e;color:white;padding:10px;border-radius:8px}p:empty{display:none}";
+    style.textContent = "button{display:inline-grid;place-items:center;vertical-align:top;width:44px;height:44px;cursor:pointer;border:1px solid #ffffff60;border-radius:8px;background:#17171ee8;color:white;padding:0;box-shadow:0 2px 10px #0004}button+button{margin-left:8px}button:focus-visible{outline:3px solid #84c9ff;outline-offset:2px}button:hover{background:#34343f}svg{pointer-events:none}p{font:13px system-ui;max-width:320px;background:#17171e;color:white;padding:10px;border-radius:8px}p:empty{display:none}";
     nativeButton = document.createElement("button");
-    nativeButton.textContent = "Native fullscreen";
+    nativeButton.type = "button";
+    setIcon(nativeButton, "expand", "Native fullscreen");
     nativeButton.addEventListener("click", async () => {
       try {
         // The isolated world's native API bypasses the page hook and uses this click's activation.
@@ -51,7 +70,8 @@
       }
     });
     const button = document.createElement("button");
-    button.textContent = "Return to page";
+    button.type = "button";
+    setIcon(button, "close", "Return to page");
     button.title = "Return to page (Esc)";
     button.addEventListener("click", returnToPage);
     status = document.createElement("p");
@@ -81,7 +101,7 @@
   }, true);
 
   document.addEventListener("fullscreenchange", () => {
-    if (nativeButton) nativeButton.textContent = document.fullscreenElement ? "Exit native fullscreen" : "Native fullscreen";
+    if (nativeButton) setIcon(nativeButton, document.fullscreenElement ? "shrink" : "expand", document.fullscreenElement ? "Exit native fullscreen" : "Native fullscreen");
   });
 
   async function loadConfig() {

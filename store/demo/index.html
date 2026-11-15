@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Better Fullscreen · Video demo</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f6f4ef;color:#242337;font:16px/1.5 system-ui,-apple-system,sans-serif}header{height:86px;display:flex;align-items:center;justify-content:space-between;max-width:1120px;margin:auto;border-bottom:1px solid #dddbd4}header strong{font-size:20px;letter-spacing:-.6px}header span{font-size:13px;color:#726f80}main{max-width:1120px;margin:38px auto}#clipped{border-radius:16px;overflow:hidden;transform:translateZ(0);contain:paint;background:#1c1c26}#player{width:100%;height:570px;position:relative;background:#12121c;color:white}video{display:block;width:100%;height:100%;object-fit:contain}#controls{position:absolute;bottom:0;left:0;right:0;padding:30px 24px 18px;display:flex;align-items:center;gap:12px;background:linear-gradient(transparent,#12121cde);font-size:13px}#caption{position:absolute;bottom:90px;left:0;right:0;text-align:center;font-size:20px;text-shadow:0 2px 6px #0008;pointer-events:none}button{border:1px solid #ffffff70;background:#1c1c28c9;color:white;padding:9px 14px;border-radius:7px;font:500 13px system-ui;cursor:pointer}button:focus-visible{outline:3px solid #9ce7eb;outline-offset:3px}#enter{margin-left:auto}#exit{display:none}#player[data-better-fullscreen-target] #exit{display:inline-block}#player[data-better-fullscreen-target] #enter{display:none}#player[data-better-fullscreen-target] #exit{margin-left:auto}#player:fullscreen #caption{color:rgb(120,230,255)}h1{font-size:26px;letter-spacing:-.6px;margin:22px 0 4px}p{margin:0;color:#726f80}#slides{display:none}
+@media(max-width:800px){header{height:56px;margin:0 20px}main{margin:20px}#player{height:65vh}h1{font-size:22px}}
+</style>
+<header><strong>Better Fullscreen</strong><span>Video demo</span></header>
+<main>
+<div id="clipped"><div id="player">
+  <video id="video" autoplay muted playsinline></video>
+  <div id="caption">Quiet water. Open sky.</div>
+  <div id="controls"><button id="play">Pause</button><span id="elapsed">0:00</span><button id="enter">Fullscreen</button><button id="exit">Exit fullscreen</button></div>
+</div></div>
+<h1>Lake light</h1><p>An original animated landscape</p>
+<div id="slides"><button id="slides-enter">Fullscreen slides</button></div>
+</main>
+<script>
+const video=document.querySelector('video');const canvas=document.createElement('canvas');canvas.width=1600;canvas.height=900;const ctx=canvas.getContext('2d');let tick=0;
+function draw(){tick++;const sky=ctx.createLinearGradient(0,0,0,900);sky.addColorStop(0,'#7694b0');sky.addColorStop(.62,'#e1d1af');sky.addColorStop(1,'#9aafa9');ctx.fillStyle=sky;ctx.fillRect(0,0,1600,900);ctx.fillStyle='#f8e6bc';ctx.beginPath();ctx.arc(1190,242,66,0,Math.PI*2);ctx.fill();
+function mountain(color,points){ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(0,900);for(const [x,y] of points)ctx.lineTo(x,y);ctx.lineTo(1600,900);ctx.closePath();ctx.fill()}
+mountain('#84909c',[[0,430],[185,297],[410,510],[645,259],[926,540],[1210,330],[1600,570]]);mountain('#647e86',[[0,567],[263,420],[513,582],[806,482],[1127,622],[1440,480],[1600,570]]);mountain('#3c6267',[[0,692],[204,590],[467,712],[710,641],[1040,752],[1290,650],[1600,715]]);ctx.fillStyle='#9aafa9';ctx.fillRect(0,735,1600,165);for(let i=0;i<12;i++){ctx.strokeStyle=i%2?'#b7c4b677':'#d5d7bd55';ctx.lineWidth=2;const y=752+i*12;const x=(tick*.7+i*117)%1700-100;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+130+i*12,y);ctx.stroke()}ctx.fillStyle='#284c50';ctx.beginPath();ctx.moveTo(0,800);ctx.quadraticCurveTo(180,724,360,900);ctx.lineTo(0,900);ctx.fill();document.querySelector('#elapsed').textContent='0:'+String(Math.floor(video.currentTime)%60).padStart(2,'0')}
+draw();setInterval(draw,100);video.srcObject=canvas.captureStream(10);video.play().catch(()=>{});
+document.querySelector('#play').onclick=()=>{video.paused?video.play():video.pause();document.querySelector('#play').textContent=video.paused?'Play':'Pause'};
+window.changes=0;document.addEventListener('fullscreenchange',()=>window.changes++);
+document.querySelector('#enter').onclick=()=>{window.entry='opening';document.querySelector('#player').requestFullscreen().then(()=>window.entry='opened',e=>window.entry=e.name)};
+document.querySelector('#exit').onclick=()=>document.exitFullscreen().catch(()=>{});
+document.querySelector('#slides-enter').onclick=()=>document.querySelector('#slides').requestFullscreen().catch(()=>{});
+window.addEventListener('keydown',e=>{if(e.key==='Escape')e.stopImmediatePropagation()},true);
+</script>
+</html>

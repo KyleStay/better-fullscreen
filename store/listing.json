@@ -1,0 +1,24 @@
+{
+  "name": "Better Fullscreen",
+  "language": "English",
+  "categorySuggestion": "Productivity / Tools (choose the equivalent current dashboard category)",
+  "summary": "Fill your current tab with video, with a button for native fullscreen. Press Escape to return to the page.",
+  "supportUrl": "https://github.com/KyleStay/better-fullscreen/issues",
+  "homepageUrl": "https://github.com/KyleStay/better-fullscreen#readme",
+  "privacyPolicyUrl": "https://github.com/KyleStay/better-fullscreen/blob/main/PRIVACY.md",
+  "price": "Free",
+  "platform": "Chrome on macOS",
+  "matureContent": false,
+  "singlePurpose": "Display a website video player across the current browser viewport, with controls to return to the page or explicitly use native fullscreen.",
+  "storageJustification": "Save the user's per-site enable/disable settings locally and maintain temporary per-tab session tokens so top-level pages and embedded video frames can coordinate entering and leaving the media view. No settings are sent to a server or synchronized by the extension.",
+  "hostPermissionsJustification": "The extension must run at document_start on permitted HTTP and HTTPS pages, including embedded player frames, to replace website JavaScript Fullscreen API calls before player scripts cache them. It reads the current site's hostname to apply the user's per-site setting and adjusts only the requested player and its layout ancestors. Broad access supports automatic behavior across video sites; activeTab would require manual invocation and would not provide the early automatic interception requested by this product. No browsing history or page content is transmitted.",
+  "remoteCode": false,
+  "remoteCodeExplanation": "All executable JavaScript is packaged in the uploaded ZIP. The extension does not fetch scripts, use eval or load executable code from a remote server.",
+  "dataTypesHandledLocally": [
+    "Web history: current page address/hostname for per-site settings; no browsing-history log",
+    "Website content: video-player elements, styles, frame relationships and fullscreen state; no content upload"
+  ],
+  "dataSentToDeveloper": false,
+  "reviewInstructionsFile": "review-instructions.txt",
+  "detailedDescriptionFile": "description.txt"
+}
