@@ -82,7 +82,12 @@ def main():
         shutil.copyfile(ROOT / "store/screenshots/capture.json", kit / "screenshots/capture.json")
     report = {"version": manifest["version"], "readyToUpload": not problems, "remaining": problems, "extensionZip": archive.name, "extensionSha256": hashlib.sha256(archive.read_bytes()).hexdigest(), "screenshots": [p.name for p in shots], "requiresHumanDashboardReview": True, "submitted": False}
     (kit / "READINESS.json").write_text(json.dumps(report, indent=2) + "\n")
+    bundle = ROOT / "artifacts/better-fullscreen-chrome-web-store-kit.zip"
+    with zipfile.ZipFile(bundle, "w", zipfile.ZIP_DEFLATED) as output:
+        for path in sorted(p for p in kit.rglob("*") if p.is_file()):
+            output.write(path, path.relative_to(kit))
     print(f"Submission kit: {kit}")
+    print(f"Download bundle: {bundle}")
     if problems:
         print("NOT READY TO UPLOAD:\n- " + "\n- ".join(problems))
         return 2
