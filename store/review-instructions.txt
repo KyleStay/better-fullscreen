@@ -2,7 +2,7 @@ Environment: Chrome 119 or newer on macOS. The replacement feature intentionally
 
 No extension account, subscription or developer credentials are required. The extension does not bypass third-party login, DRM or paywalls.
 
-1. Install the package and reload a compatible video page. A reproducible, self-contained demo is included in the public repository at store/demo/index.html; the repository's npm run store:capture command serves that original-content demo locally, loads the exact unpacked extension in isolated Chrome for Testing, exercises the controls and captures real screenshots.
+1. Install the package and reload a compatible video page. For an original-content demo, download the public repository source and run python3 -m http.server 8000 --directory store/demo from its root, then open http://localhost:8000 in Chrome with the extension installed. This reviewer path does not need Node, account credentials or Chrome for Testing. The maintainer's separate npm run store:capture command automates the demo and screenshot checks in an isolated testing browser.
 2. Click the player's fullscreen button. The player should fill the current viewport while tab and window placement remain unchanged. The corners icon and × appear at the top right.
 3. Press Escape or click ×. The page layout should return.
 4. Enter the media view again. Click the corners icon to use real native fullscreen. It changes to inward-facing corners. Toggle it to return to viewport mode, or use × to return to the page.
