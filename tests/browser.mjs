@@ -152,8 +152,13 @@ try {
   await toolbar(false);await returned(id);
   const restored=await page.eval("(()=>{const s=document.querySelector('#player').style;return {top:s.getPropertyValue('top'),topPriority:s.getPropertyPriority('top'),margin:s.getPropertyValue('margin-left'),padding:s.getPropertyValue('padding-bottom'),paddingPriority:s.getPropertyPriority('padding-bottom'),overflow:s.getPropertyValue('overflow-x'),overflowPriority:s.getPropertyPriority('overflow-x'),color:s.color}})()");
   assert.deepEqual(restored,{top:'40px',topPriority:'important',margin:'12px',padding:'6px',paddingPriority:'important',overflow:'clip',overflowPriority:'important',color:'rebeccapurple'});
+  await page.eval(`(()=>{const p=document.querySelector('#player');p.style.cssText=${JSON.stringify(originalInline.player)};p.style.setProperty('--gap','12px');p.style.setProperty('margin','var(--gap)');p.style.setProperty('margin-inline-start','24px');p.style.setProperty('top','20px','important');p.style.setProperty('inset-block-start','40px','important')})()`);
+  const variableBefore=await page.eval("(()=>{const p=document.querySelector('#player'),s=getComputedStyle(p);return {css:p.style.cssText,top:s.top,margin:s.marginLeft}})()");
+  await open(page,id);await toolbar(false);await returned(id);
+  const variableAfter=await page.eval("(()=>{const p=document.querySelector('#player'),s=getComputedStyle(p);return {css:p.style.cssText,top:s.top,margin:s.marginLeft}})()");
+  assert.deepEqual(variableAfter,variableBefore);
   await page.eval(`document.querySelector('#player').style.cssText=${JSON.stringify(originalInline.player)};document.querySelector('#clipped').style.cssText=${JSON.stringify(originalInline.clipped)}`);
-  record("real CSSOM restores partial inline longhands and priorities without losing unrelated updates");
+  record("real CSSOM restores partial longhands, variables and declaration order without losing unrelated updates");
 
   await open(page,id);await page.send("Page.navigate",{url:url+"?navigation=1"});await returned(id);
   await until(()=>page.eval("document.readyState==='complete'"),"navigation complete");await configReady(page);
