@@ -6,43 +6,32 @@ Prepare the first Chrome Web Store release of **Better Fullscreen 0.3.0**, for *
 
 No public store listing, publisher display name or store item ID is recorded yet. Use the existing developer account. If an item already exists in that account, record its public URL and verify its identity before uploading a replacement; do not create a duplicate. No private signing key is needed for this first-publication ZIP.
 
-**Publication is blocked.** [PR #1](https://github.com/KyleStay/better-fullscreen/pull/1) contains the player-style restoration and capture-harness fixes. It remains draft until the required real Chrome checks pass. Local tests pass, but they simulate the DOM and browser APIs. Genuine screenshots, native fullscreen and priority-site compatibility are still unverified. A fresh capture attempt on 2026-11-18 failed at `listen EPERM 127.0.0.1` before launching Chrome; cleanup recorded zero browsers and profiles. See [QA](../docs/qa.md).
+**Genuine screenshots and the local Chrome checks now pass.** On 2026-11-18, Chrome for Testing 153.0.8010.12 on macOS 26.7.1 passed all 11 fixture observations, including native fullscreen, Escape, player-style restoration and cross-origin embeds. Three 1280×800 captures and their source/image hashes are in `store/screenshots/`. See [QA](../docs/qa.md).
 
-The guide and listing materials can be prepared now. Submit only after the checks below pass and the intended source is merged. This task has not uploaded, submitted or published a store item.
+Store submission still requires the final source to be merged, priority-site checks, public URL verification and dashboard review. This task has not uploaded, submitted or published a store item.
 
 ## 1. Validate the release source
 
-While PR #1 is pending, run the checks against its candidate checkout, not the older primary checkout:
-
-```sh
-cd '/Users/kyle/Documents/ChatGPT/Better fullscreen/artifacts/landing/worktree'
-git status --short
-git rev-parse HEAD
-npm test
-npm run store:capture
-npm run store:prepare
-```
-
-Run each command only after the preceding check succeeds. `store:prepare` deliberately exits with status **2** while screenshots are missing or stale. The candidate's required browser result is a merge gate; a local unit-test pass cannot replace it.
-
-After PR #1 merges, use the updated primary checkout instead:
+Use the updated primary checkout after the reviewed source is merged:
 
 ```sh
 cd '/Users/kyle/Documents/ChatGPT/Better fullscreen'
 git switch main
 git pull --ff-only
 npm test
-npm run store:capture
+npm run test:browser
 npm run store:prepare
 ```
 
-Prerequisites: Node.js 22+, Python 3 and the installed permission-free Chrome for Testing runner. On another machine, set `CHROME_TEST_RUNNER_DIR` to that runner's scripts directory. There are no npm dependencies or extension build step. Included branding PNGs need no regeneration; `npm run store:assets` additionally requires `rsvg-convert`.
+Run each command only after the preceding check succeeds. `store:prepare` validates the committed captures against all packaged extension files; it deliberately exits with status **2** if screenshots are missing or stale. To refresh screenshots after an extension change, run `npm run store:capture` before `npm run store:prepare`. During review, run these commands from the PR checkout that contains the intended extension source.
+
+Prerequisites: Node.js 22+, Python 3 and the installed isolated Chrome for Testing runner. On another machine, set `CHROME_TEST_RUNNER_DIR` to that runner's scripts directory. There are no npm dependencies or extension build step. Included branding PNGs need no regeneration; `npm run store:assets` additionally requires `rsvg-convert`.
 
 Capture uses an owned disposable testing profile and original project demo content. It exercises the actual extension and writes source/image hashes and cleanup results. Inspect `artifacts/qa/browser-results.json`, `store/screenshots/capture.json`, all captured images, and `artifacts/chrome-web-store/READINESS.json`. Require a successful capture, zero leftover processes/profiles, and `readyToUpload: true`. A guide checkmark does not verify these files.
 
-The agent's sandbox blocks the runner's localhost listener. Its runner policy prohibits escalation or a permission-gated GUI substitute. The command above can be run in a regular Terminal with permitted localhost access; that route has not been verified here. Report another failure as a failure and fix it before submission. Headless runs cannot establish macOS native-window behavior.
+The default agent sandbox denies localhost with `EPERM`. Kyle's current workspace instructions authorize retrying the exact isolated test command through automatic approval review. That route produced these real captures and verified cleanup. Do not substitute a personal Chrome profile or GUI automation. A failure remains a failure; stop if review denies the operation or requires manual approval. Headless runs alone cannot establish macOS native-window behavior.
 
-Also test YouTube, X/Twitter and Facebook where accessible. Record date, browser/macOS version, URL, login/access state, and outcomes in `docs/qa.md`. Check entry/exit, captions, playback/audio/position, native toggle, native Escape, site override, navigation and cross-origin frames. A demo pass does not prove a third-party site passed. Report authentication/DRM/bot gates without bypassing them or claiming compatibility.
+Before submission, also test YouTube, X/Twitter and Facebook where accessible. Record date, browser/macOS version, URL, login/access state, and outcomes in `docs/qa.md`. Check entry/exit, captions, playback/audio/position, native toggle, native Escape, site override, navigation and cross-origin frames. A demo pass does not prove a third-party site passed. Report authentication/DRM/bot gates without bypassing them or claiming compatibility.
 
 ## 2. Select the upload files
 

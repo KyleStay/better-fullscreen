@@ -61,17 +61,57 @@
     return css;
   }
 
+  function declarations(css) {
+    const result = new Map();
+    let start = 0, colon = -1, depth = 0, quote = "", escaped = false, comment = false;
+    for (let i = 0; i <= css.length; i++) {
+      const char = css[i] || ";", next = css[i + 1];
+      if (comment) {
+        if (char === "*" && next === "/") { comment = false; i++; }
+        continue;
+      }
+      if (escaped) { escaped = false; continue; }
+      if (char === "\\") { escaped = true; continue; }
+      if (quote) { if (char === quote) quote = ""; continue; }
+      if (char === '"' || char === "'") { quote = char; continue; }
+      if (char === "/" && next === "*") { comment = true; i++; continue; }
+      if ("([{".includes(char)) { depth++; continue; }
+      if (")]}".includes(char)) { depth--; continue; }
+      if (!depth && char === ":" && colon < start) colon = i;
+      if (!depth && char === ";") {
+        if (colon >= start) result.set(css.slice(start, colon).trim(), css.slice(start, i).trim() + ";");
+        start = i + 1; colon = -1;
+      }
+    }
+    return result;
+  }
+
   function expand(target, token) {
     if (active?.target === target) return;
     if (active) collapse();
     const undo = [];
     function style(element, values) {
+      // Serialized declarations retain var() shorthands and logical/physical cascade order.
+      const original = declarations(element.style.cssText);
+      const probe = document.createElement("div").style;
       for (const [property, value] of Object.entries(values)) {
-        const previous = element.style.getPropertyValue(property);
-        const priority = element.style.getPropertyPriority(property);
-        undo.push(() => previous ? element.style.setProperty(property, previous, priority) : element.style.removeProperty(property));
+        probe.setProperty(property, value, "important");
         element.style.setProperty(property, value, "important");
       }
+      const owned = new Set([...Object.keys(values), ...Array.from(probe)]);
+      const applied = declarations(element.style.cssText);
+      undo.push(() => {
+        const current = declarations(element.style.cssText);
+        const restored = new Map(original);
+        for (const property of new Set([...applied.keys(), ...current.keys()])) {
+          if (applied.get(property) === current.get(property)) continue;
+          probe.cssText = current.get(property) || applied.get(property);
+          if (owned.has(property) || Array.from(probe).some(name => owned.has(name))) continue;
+          if (current.has(property)) restored.set(property, current.get(property));
+          else restored.delete(property);
+        }
+        element.style.cssText = [...restored.values()].join(" ");
+      });
     }
     const previousMarker = target.getAttribute("data-better-fullscreen-target");
     target.setAttribute("data-better-fullscreen-target", "");

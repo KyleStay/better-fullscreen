@@ -1,0 +1,60 @@
+{
+  "started": "2026-11-18T17:21:30.199Z",
+  "finished": "2026-11-18T17:21:44.066Z",
+  "browser": "Chrome/153.0.8010.12",
+  "checks": [
+    "live player fills current viewport without moving/resizing the window or creating tabs",
+    "Native fullscreen button toggles real fullscreen while retaining viewport view",
+    "Escape wins over player key handlers and restores page layout",
+    "player exit-fullscreen control restores page",
+    "visible Return to page control restores page",
+    "Return to page also exits native fullscreen",
+    "real CSSOM restores partial longhands, variables and declaration order without losing unrelated updates",
+    "navigation clears viewport session",
+    "per-site off switch passes media requests to native fullscreen",
+    "non-media fullscreen requests retain native behavior",
+    "cross-origin embedded player fills viewport and focused-child Escape restores page"
+  ],
+  "cleanup": {
+    "processes": 0,
+    "profiles": 0
+  },
+  "storeCapture": {
+    "version": "0.3.0",
+    "sourceFiles": {
+      "manifest.json": "503d3966e7cebcaae4fd5c899cb6155415d36b3902fa961e381a9e2d2b0d58a1",
+      "background.js": "707a9d9978513c56752e847dafbe9ea37bd1bb3a2c03f1f6eb91e827e3766090",
+      "policy.js": "7a5e0df7896fd771ca5b66c2a1af217b1551716378ad31c8266d60341b59d78e",
+      "bridge.js": "6423e2d797f01dc62339cc8c75434a1359a3af1631526d6c2b91845dedd7f856",
+      "page.js": "a5e4bd7d0fe613ca78d115cd1f03bbca9f28075ca8b276817b8ed367b937d81d",
+      "popup.html": "f09b45a3f2fd891bd5ef0d2b15af1e934c2545101e7e28aeb1c1fb7909ba3a9e",
+      "popup.js": "3a0ce1bf049b09981a3d7c8963c6231e83832fa603d3d40e64fc4e45d438df36",
+      "ui.css": "774a300f86f8bd137ddafc8adbb5a6dd065d7f691a3f906636f609c547db9f72",
+      "privacy.html": "d222fb745005ccce99f57abe51f977a70991cbd7c6c4851d6f4324a4ac5c199d",
+      "icons/16.png": "2123ca30e08437f832e8496ea05e20d02514ed76feb7c978fde3fa8fed4bc658",
+      "icons/32.png": "498e8bde53df8e4197b9d2ae7cf3190f055ef84c2bfc272e8c6916a822a4bb14",
+      "icons/48.png": "784a66ba5a79f79440c051cb987b694490afd303d33307ca50ce0daa1c565d1e",
+      "icons/128.png": "97e8f2a8dafaed0826a26364feb25c26e9bda06777d691efe79a491c7edc2e25"
+    },
+    "screenshots": [
+      {
+        "name": "01-viewport.png",
+        "label": "Actual media view in the current tab",
+        "sha256": "477df47384cb3929bab32e250a8f392ca19b0c8bbd6cfc4fc6a8f2a83ee13e37"
+      },
+      {
+        "name": "02-native-fullscreen.png",
+        "label": "Actual native fullscreen with inward-corners control",
+        "sha256": "3d01e2f9882a1704026486200cc6819f890bc1f663963bc9362408ee51a72bb0"
+      },
+      {
+        "name": "03-return-to-page.png",
+        "label": "Actual page after Escape restores the layout",
+        "sha256": "c7bc8f8cfd621329178774677768d0bf1589dd96a96ca78a9345552989e0aac9"
+      }
+    ],
+    "originalContent": true,
+    "source": "Actual extension in isolated Chrome for Testing on the original project demo",
+    "verified": true
+  }
+}

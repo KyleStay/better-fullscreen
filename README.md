@@ -24,7 +24,7 @@ Click the extension's toolbar icon to turn replacement off for the current site.
 
 ## Compatibility and current status
 
-Version 0.3.0 prepares the in-tab viewport extension for its first store listing, with icon controls, packaged privacy information and store artwork. It passes local logic tests. **Chrome rendering, actual native fullscreen, and live YouTube, X/Twitter, and Facebook playback remain unverified until the capture/runtime checks succeed.** The isolated browser attempt is blocked because this workspace's sandbox rejects localhost sockets (`EPERM`). See [QA](docs/qa.md).
+Version 0.3.0 prepares the in-tab viewport extension for its first store listing. On 2026-11-18, the actual extension passed the isolated Chrome for Testing fixture run on macOS, including viewport sizing, native fullscreen toggling, Escape, style restoration and cross-origin embeds. Three genuine 1280×800 screenshots and their verified capture receipt are included under `store/screenshots/`. **Live YouTube, X/Twitter and Facebook compatibility remains unverified.** See [QA](docs/qa.md).
 
 The extension wraps website JavaScript Fullscreen API calls and recognizes video players. It expands the requested element, mirrors readable fullscreen CSS, and notifies page controls. Embedded players are supported when Chrome grants content-script access to the frames.
 
@@ -58,8 +58,8 @@ Read the [privacy policy](PRIVACY.md) or [open an issue](https://github.com/Kyle
 
 No Chrome Web Store listing exists yet. The package is for first publication. The repository is public at the owner's request so support and the privacy policy are accessible without an invitation.
 
-`npm run store:prepare` writes the package, listing copy, privacy instructions, icons and promotional images into `artifacts/chrome-web-store/`. It exits with a clear not-ready result until authentic screenshots pass validation.
+`npm run store:prepare` writes the package, listing copy, privacy instructions, icons and promotional images into `artifacts/chrome-web-store/`. It validates the included authentic screenshots against the current extension source and fails if they are missing or stale.
 
-On a Mac that permits the isolated browser's localhost connections, run `npm run store:capture && npm run store:prepare` to exercise the real extension and generate three 1280×800 screenshots from original demo content. `store:assets` regenerates vector branding through `rsvg-convert`; the ready PNGs are already included. See [publishing instructions](store/PUBLISHING.md). No hosted CI, Pages build, developer credentials or account registration is needed for preparation.
+To refresh the captures, run `npm run store:capture && npm run store:prepare` to exercise the real extension and generate three 1280×800 screenshots from original demo content. `store:assets` regenerates vector branding through `rsvg-convert`; the ready PNGs are already included. See [publishing instructions](store/PUBLISHING.md). No hosted CI, Pages build, developer credentials or account registration is needed for preparation.
 
 See the [design](docs/design.md), [glossary](GLOSSARY.md), and [viewport decision](docs/adr/0002-fill-the-current-viewport.md).
