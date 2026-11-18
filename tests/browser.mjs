@@ -56,7 +56,11 @@ async function open(page, id) {
   await until(()=>page.eval("window.entry==='opened'"), "fullscreen promise resolved");
   return until(async()=>{const s=await session(id);return s?.token ? s : false}, "viewport session");
 }
-async function returned(id) { await until(async()=> !(await session(id)), "tab restored"); }
+async function returned(page, id) {
+  await until(async()=> !(await session(id)), "viewport session cleared");
+  // Storage removal precedes the content-script broadcast and main-world layout rollback.
+  await until(()=>page.eval("document.fullscreenElement === null && !document.querySelector('[data-better-fullscreen-control]') && !document.querySelector('[data-better-fullscreen-target]')"), "page layout restored");
+}
 
 async function screenshot(page, name, label) {
   if (!storeCapture) return;
@@ -99,7 +103,8 @@ try {
   let id = tab.id;
   const initialStyle = await page.eval("document.querySelector('#player').style.cssText");
   const before = await page.eval("({width:innerWidth,height:innerHeight,time:document.querySelector('video').currentTime})");
-  const sourceWindow = await worker.eval(`chrome.windows.get(${tab.windowId})`);
+  // Real test input focuses the browser; focus is not a change to window placement.
+  const {focused: initialFocus, ...sourceWindow} = await worker.eval(`chrome.windows.get(${tab.windowId})`);
   const tabCount = await worker.eval("chrome.tabs.query({}).then(t=>t.length)");
   await open(page,id);
   const view = await page.eval("({width:innerWidth,height:innerHeight,player:document.querySelector('#player').getBoundingClientRect().toJSON(),native:document.documentElement.matches(':fullscreen'),element:document.fullscreenElement?.id,caption:getComputedStyle(document.querySelector('#caption')).color,paused:document.querySelector('video').paused})");
@@ -108,7 +113,8 @@ try {
   assert.equal(view.caption,"rgb(120, 230, 255)");assert.equal(view.paused,false);
   assert.ok(Math.abs(view.player.width-view.width)<2 && Math.abs(view.player.height-view.height)<2);
   assert.equal((await worker.eval(`chrome.tabs.get(${id})`)).windowId,tab.windowId);
-  assert.deepEqual(await worker.eval(`chrome.windows.get(${tab.windowId})`),sourceWindow);
+  const {focused: currentFocus, ...currentWindow} = await worker.eval(`chrome.windows.get(${tab.windowId})`);
+  assert.deepEqual(currentWindow,sourceWindow);
   assert.equal(await worker.eval("chrome.tabs.query({}).then(t=>t.length)"),tabCount);
   await until(()=>page.eval(`document.querySelector('video').currentTime>${before.time+0.2}`),"playback continues");
   const {data} = await page.send("Page.captureScreenshot",{format:"png"});
@@ -117,8 +123,15 @@ try {
   record("live player fills current viewport without moving/resizing the window or creating tabs");
 
   async function toolbar(native) {
-    const rect=await page.eval("document.querySelector('[data-better-fullscreen-control]').getBoundingClientRect().toJSON()");
     await page.send("Page.bringToFront");
+    let previous, stableSince;
+    const rect=await until(async()=>{
+      const current=await page.eval("document.querySelector('[data-better-fullscreen-control]').getBoundingClientRect().toJSON()");
+      const signature=JSON.stringify(current);
+      if(signature!==previous){previous=signature;stableSince=Date.now();}
+      // Native macOS fullscreen animates the viewport after fullscreenchange fires.
+      return Date.now()-stableSince>=300 ? current : false;
+    }, "toolbar position settled");
     for(const type of ["mousePressed","mouseReleased"])await page.send("Input.dispatchMouseEvent",{type,x:native?rect.x+22:rect.right-22,y:rect.y+22,button:"left",clickCount:1});
   }
   await toolbar(true);
@@ -129,19 +142,19 @@ try {
   assert.ok(await session(id));
   record("Native fullscreen button toggles real fullscreen while retaining viewport view");
 
-  await page.click("#video");await page.escape();await returned(id);
+  await page.click("#video");await page.escape();await returned(page,id);
   assert.equal(await page.eval("document.fullscreenElement"),null);
   assert.equal(await page.eval("document.querySelector('#player').style.cssText"),initialStyle);
   await screenshot(page,"03-return-to-page.png","Actual page after Escape restores the layout");
   record("Escape wins over player key handlers and restores page layout");
-  await open(page,id);await page.click("#exit");await returned(id);
+  await open(page,id);await page.click("#exit");await returned(page,id);
   record("player exit-fullscreen control restores page");
-  await open(page,id);await toolbar(false);await returned(id);
+  await open(page,id);await toolbar(false);await returned(page,id);
   record("visible Return to page control restores page");
 
   await open(page,id);await toolbar(true);
   await until(()=>page.eval("document.documentElement.matches(':fullscreen')"),"native fullscreen opens again");
-  await toolbar(false);await returned(id);
+  await toolbar(false);await returned(page,id);
   await until(()=>page.eval("!document.documentElement.matches(':fullscreen')"),"return leaves native fullscreen");
   record("Return to page also exits native fullscreen");
 
@@ -149,18 +162,18 @@ try {
   await page.eval(`(()=>{const player=document.querySelector('#player'),clipped=document.querySelector('#clipped');clipped.style.contain='none';clipped.style.overflow='visible';player.style.setProperty('top','40px','important');player.style.setProperty('margin-left','12px');player.style.setProperty('padding-bottom','6px','important');player.style.setProperty('overflow-x','clip','important')})()`);
   await open(page,id);
   await page.eval("document.querySelector('#player').style.color='rebeccapurple'");
-  await toolbar(false);await returned(id);
+  await toolbar(false);await returned(page,id);
   const restored=await page.eval("(()=>{const s=document.querySelector('#player').style;return {top:s.getPropertyValue('top'),topPriority:s.getPropertyPriority('top'),margin:s.getPropertyValue('margin-left'),padding:s.getPropertyValue('padding-bottom'),paddingPriority:s.getPropertyPriority('padding-bottom'),overflow:s.getPropertyValue('overflow-x'),overflowPriority:s.getPropertyPriority('overflow-x'),color:s.color}})()");
   assert.deepEqual(restored,{top:'40px',topPriority:'important',margin:'12px',padding:'6px',paddingPriority:'important',overflow:'clip',overflowPriority:'important',color:'rebeccapurple'});
   await page.eval(`(()=>{const p=document.querySelector('#player');p.style.cssText=${JSON.stringify(originalInline.player)};p.style.setProperty('--gap','12px');p.style.setProperty('margin','var(--gap)');p.style.setProperty('margin-inline-start','24px');p.style.setProperty('top','20px','important');p.style.setProperty('inset-block-start','40px','important')})()`);
   const variableBefore=await page.eval("(()=>{const p=document.querySelector('#player'),s=getComputedStyle(p);return {css:p.style.cssText,top:s.top,margin:s.marginLeft}})()");
-  await open(page,id);await toolbar(false);await returned(id);
+  await open(page,id);await toolbar(false);await returned(page,id);
   const variableAfter=await page.eval("(()=>{const p=document.querySelector('#player'),s=getComputedStyle(p);return {css:p.style.cssText,top:s.top,margin:s.marginLeft}})()");
   assert.deepEqual(variableAfter,variableBefore);
   await page.eval(`document.querySelector('#player').style.cssText=${JSON.stringify(originalInline.player)};document.querySelector('#clipped').style.cssText=${JSON.stringify(originalInline.clipped)}`);
   record("real CSSOM restores partial longhands, variables and declaration order without losing unrelated updates");
 
-  await open(page,id);await page.send("Page.navigate",{url:url+"?navigation=1"});await returned(id);
+  await open(page,id);await page.send("Page.navigate",{url:url+"?navigation=1"});await returned(page,id);
   await until(()=>page.eval("document.readyState==='complete'"),"navigation complete");await configReady(page);
   record("navigation clears viewport session");
   await worker.eval("chrome.storage.local.set({disabledSites:['127.0.0.1']})");
@@ -186,7 +199,7 @@ try {
   for(const type of ["mousePressed","mouseReleased"])await page.send("Input.dispatchMouseEvent",{type,x:frameRect.x+rect.x+rect.width/2+2,y:frameRect.y+rect.y+rect.height/2+2,button:"left",clickCount:1});
   await until(()=>child.eval("window.entry==='opened'"),"embedded player opens");
   await until(()=>page.eval("Math.abs(document.querySelector('iframe').getBoundingClientRect().width-innerWidth)<2"),"parent iframe fills viewport");
-  await page.escape();await returned(id);
+  await page.escape();await returned(page,id);
   record("cross-origin embedded player fills viewport and focused-child Escape restores page");
 
   assert.equal(results.errors.length,0,`Page exceptions: ${results.errors}`);
