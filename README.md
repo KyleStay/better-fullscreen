@@ -2,7 +2,11 @@
 
 A Chrome extension for macOS that fills the **current browser viewport** with a website's video player. The tab stays in its window without resizing it. Choose **Native fullscreen** when you want the whole display.
 
-## Install or update locally
+## Install
+
+[Install Better Fullscreen from the Chrome Web Store](https://chromewebstore.google.com/detail/better-fullscreen/kafmeofjcelaphbnbcemcilfhkcigbmd). Reload any open video pages after installing.
+
+### Install or update locally
 
 1. Open `chrome://extensions` in Chrome and enable **Developer mode**.
 2. Choose **Load unpacked** and select this repository's `extension` folder. If already installed from that folder, exit any media view and click its **Reload** button instead.
@@ -24,7 +28,7 @@ Click the extension's toolbar icon to turn replacement off for the current site.
 
 ## Compatibility and current status
 
-Version 0.3.0 prepares the in-tab viewport extension for its first store listing. On 2026-11-18, the actual extension passed the isolated Chrome for Testing fixture run on macOS, including viewport sizing, native fullscreen toggling, Escape, style restoration and cross-origin embeds. Three genuine 1280×800 screenshots and their verified capture receipt are included under `store/screenshots/`. **Live YouTube, X/Twitter and Facebook compatibility remains unverified.** See [QA](docs/qa.md).
+Version 0.3.0 is available from the Chrome Web Store. On 2026-11-18, the actual extension passed the isolated Chrome for Testing fixture run on macOS, including viewport sizing, native fullscreen toggling, Escape, style restoration and cross-origin embeds. Three genuine 1280×800 screenshots and their verified capture receipt are included under `store/screenshots/`. **Live YouTube, X/Twitter and Facebook compatibility remains unverified.** See [QA](docs/qa.md).
 
 The extension wraps website JavaScript Fullscreen API calls and recognizes video players. It expands the requested element, mirrors readable fullscreen CSS, and notifies page controls. Embedded players are supported when Chrome grants content-script access to the frames.
 
@@ -55,8 +59,6 @@ HTTP and HTTPS site access installs the fullscreen hook before player scripts, i
 Read the [privacy policy](PRIVACY.md) or [open an issue](https://github.com/KyleStay/better-fullscreen/issues) for support.
 
 ## Chrome Web Store preparation
-
-No Chrome Web Store listing exists yet. The package is for first publication. The repository is public at the owner's request so support and the privacy policy are accessible without an invitation.
 
 `npm run store:prepare` writes the package, listing copy, privacy instructions, icons and promotional images into `artifacts/chrome-web-store/`. It validates the included authentic screenshots against the current extension source and fails if they are missing or stale.
 
